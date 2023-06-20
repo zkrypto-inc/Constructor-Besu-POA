@@ -4,6 +4,8 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KEYS_DIR="${__dir}/networkFiles/keys"
 
+# 
+cp networkFiles/genesis.json ./genesis.json
 # Initialize counter
 counter=1
 

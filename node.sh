@@ -37,12 +37,7 @@ IP_LOCAL_PORT3=$(($IP_LOCAL_PORT + 2))
 source ${__dir}/env.defaults
 
 # create node container
-if docker create --name ${CONTAINER_NAME} -p ${IP_LOCAL_PORT}:8545 -p ${IP_LOCAL_PORT2}:8546 -p ${IP_LOCAL_PORT3}:30303 hyperledger/besu:latest --genesis-file=/genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --bootnodes=${BOOT_NODE_ENODE}; then
-    echo "Successfully create docker container: ${CONTAINER_NAME}"
-else
-     echo "Error: Failed to create Docker container."
-  exit 1
-fi
+docker create --name ${CONTAINER_NAME} -p ${IP_LOCAL_PORT}:8545 -p ${IP_LOCAL_PORT2}:8546 -p ${IP_LOCAL_PORT3}:30303 hyperledger/besu:latest --genesis-file=/genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --bootnodes=${BOOT_NODE_ENODE}
 
 # setting node container
 docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json
