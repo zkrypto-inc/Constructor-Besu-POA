@@ -37,6 +37,23 @@ IP_LOCAL_PORT3=$(($IP_LOCAL_PORT + 2))
 
 source ${ENV_PATH}
 
+# check if container name already taken
+PRE_CONTAINER_NAME=`docker ps -aqf name=${CONTAINER_NAME}`
+
+if test -n "${PRE_CONTAINER_NAME}"; then
+  read -r -p "Container name is already taken. Kill the container? [y/n]" response
+  case "$response" in
+      [yY][eE][sS]|[yY]) 
+          docker stop ${PRE_CONTAINER_NAME}
+          docker rm ${PRE_CONTAINER_NAME}
+          ;;
+      *)
+          exit 1
+          ;;
+  esac
+fi
+
+
 # create node container
 docker create --name ${CONTAINER_NAME} -p ${IP_LOCAL_PORT}:8545 -p ${IP_LOCAL_PORT2}:8546 -p ${IP_LOCAL_PORT3}:30303 hyperledger/besu:latest --genesis-file=/genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --bootnodes=${BOOT_NODE_ENODE}
 
