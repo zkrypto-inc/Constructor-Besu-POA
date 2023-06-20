@@ -3,6 +3,7 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NUMBER="Node-1"
 CONTAINER_NAME="Node-1"
 IP_LOCAL_PORT=5660
+ENV_PATH=${__dir}/.env.defaults
 
 # parse command-line arguments
 for arg in "$@"
@@ -34,7 +35,7 @@ done
 IP_LOCAL_PORT2=$(($IP_LOCAL_PORT + 1))
 IP_LOCAL_PORT3=$(($IP_LOCAL_PORT + 2))
 
-source ${__dir}/env.defaults
+source ${ENV_PATH}
 
 # create node container
 docker create --name ${CONTAINER_NAME} -p ${IP_LOCAL_PORT}:8545 -p ${IP_LOCAL_PORT2}:8546 -p ${IP_LOCAL_PORT3}:30303 hyperledger/besu:latest --genesis-file=/genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --bootnodes=${BOOT_NODE_ENODE}

@@ -1,4 +1,4 @@
 Node-*/
 networkFiles/*
 
-env.defaults
+.env*

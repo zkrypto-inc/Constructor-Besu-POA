@@ -5,6 +5,7 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NUMBER="Node-1"
 CONTAINER_NAME="Node-1"
 IP_LOCAL_PORT=5660
+ENV_PATH=${__dir}/.env.defaults
 
 # parse command-line arguments
 for arg in "$@"
@@ -36,15 +37,10 @@ done
 IP_LOCAL_PORT2=$(($IP_LOCAL_PORT + 1))
 IP_LOCAL_PORT3=$(($IP_LOCAL_PORT + 2))
 
-source ${__dir}/env.defaults
+source ${ENV_PATH}
 
 # create boot_node container
-if docker create --name ${CONTAINER_NAME} -p ${IP_LOCAL_PORT}:8545 -p ${IP_LOCAL_PORT2}:8546 -p ${IP_LOCAL_PORT3}:30303 hyperledger/besu:latest --genesis-file=/genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all"; then
-    echo "Successfully create docker container: ${CONTAINER_NAME}"
-else
-     echo "Error: Failed to create Docker container."
-  exit 1
-fi
+docker create --name ${CONTAINER_NAME} -p ${IP_LOCAL_PORT}:8545 -p ${IP_LOCAL_PORT2}:8546 -p ${IP_LOCAL_PORT3}:30303 hyperledger/besu:latest --genesis-file=/genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all"
 
 # setting boot_node container
 docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json
@@ -56,7 +52,6 @@ echo "Local Port for JSON-RPC: ${IP_LOCAL_PORT}"
 echo "Local Port for WebSocket (WS): ${IP_LOCAL_PORT2}"
 echo "Local Port for Peer-to-Peer (P2P) communication: ${IP_LOCAL_PORT3}"
 
-# start docker
 # start docker
 if docker start ${CONTAINER_NAME}; then
     echo "Successfully start docker container: ${CONTAINER_NAME}"
@@ -74,10 +69,14 @@ echo "Boot Node Enode: ${BOOT_NODE_ENODE}"
 
 
 # Check if env.defaults file exists and if it contains the BOOT_NODE_ENODE variable
-if [[ -f "${__dir}/env.defaults" && -n $(grep "BOOT_NODE_ENODE=" "${__dir}/env.defaults") ]]; then
+if [[ -f ${ENV_PATH} && -n $(grep "BOOT_NODE_ENODE=" ${ENV_PATH}) ]]; then
   # Update the existing BOOT_NODE_ENODE value
-  sed -i '' "s|BOOT_NODE_ENODE=.*|BOOT_NODE_ENODE=${BOOT_NODE_ENODE}|" "${__dir}/env.defaults"
+  sed -i '' "s|BOOT_NODE_ENODE=.*|BOOT_NODE_ENODE=${BOOT_NODE_ENODE}|" ${ENV_PATH}
 else
-  # Append BOOT_NODE_ENODE to the end of the file
-  echo "${CONTAINER_NAME}=${BOOT_NODE_ENODE}" >> "${__dir}/env.defaults"
+  # Check if the last character is a newline character
+  if [[ -s ${ENV_PATH} ]] && [[ -z $(tail -c 1 ${ENV_PATH}) ]]; then
+    echo "BOOT_NODE_ENODE=${BOOT_NODE_ENODE}" >> "${ENV_PATH}"
+  else
+    echo -e "\nBOOT_NODE_ENODE=${BOOT_NODE_ENODE}" >> "${ENV_PATH}"
+  fi
 fi
