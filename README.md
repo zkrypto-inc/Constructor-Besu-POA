@@ -29,6 +29,10 @@ Download the [Besu packaged binaries](https://github.com/hyperledger/besu/releas
 # Create a private network using IBFT 2.0
 ## Prerequisites
 - install [Docker Desktop](https://docs.docker.com/get-docker/)
+- download docker image
+```bash
+docker pull hyperledger/besu:latest
+```
 ### 1. Create a configuration file
 make ibftConfigFile.json
 ```json
@@ -75,31 +79,38 @@ make ibftConfigFile.json
   }
 }
 ```
-### 2. Generate node keys and a genesis file
+
+### 2. Construct IBFT Network
+```bash
+./run_all.sh
+```
+This script runs all procedures below.
+
+#### 2-1. Generate node keys and a genesis file
 ```bash
 besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key
 ```
 
-### 3. Copy key to Node folder
+#### 2-2. Copy key to Node folder
 ```bash
 ./copyKeys.sh
 ```
 
-### 4. Download Docker image
-```bash
-docker pull hyperledger/besu:latest
-```
-
-### 5. Start bootnode
+#### 2-3. Start bootnode
 ```bash
 ./bootnode.sh --CONTAINER_NAME="boot_node" --NODE_NUMBER=1
 ```
 
-### 6. Start Node-2,3,4
+#### 2-4. Start Node-2,3,4
 ```bash
 ./node.sh --CONTAINER_NAME="Node-2" --NODE_NUMBER=2 --LOCAL_PORT=5670
 ./node.sh --CONTAINER_NAME="Node-3" --NODE_NUMBER=3 --LOCAL_PORT=5680
 ./node.sh --CONTAINER_NAME="Node-4" --NODE_NUMBER=4 --LOCAL_PORT=5690
+```
+
+### 3. Reset Network
+```bash
+./reset.sh
 ```
 
 # Test Validator
@@ -112,7 +123,7 @@ Parameters
 - address: string- account address
 - proposal: boolean - true to propose adding validator or false to propose removing validator
 ```
-curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_proposeValidatorVote","params":["42d4287eac8078828cf5f3486cfe601a275a49a5",true], "id":1}' http://127.0.0.1:8545
+curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_proposeValidatorVote","params":["42d4287eac8078828cf5f3486cfe601a275a49a5",true], "id":1}' http://127.0.0.1:[LOCAL_PORT]
 ```
 
 >### ibft_getValidatorsByBlockNumber
@@ -121,5 +132,5 @@ Lists the validators defined in the specified block.
 Parameters
 - blockNumber: string - integer representing a block number or one of the string tags latest, earliest, or pending, as described in Block Parameter
 ```
-curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_getValidatorsByBlockNumber","params":["latest"], "id":1}' http://127.0.0.1:8545
+curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_getValidatorsByBlockNumber","params":["latest"], "id":1}' http://127.0.0.1:[LOCAL_PORT]
 ```
