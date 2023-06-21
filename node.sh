@@ -3,7 +3,7 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NUMBER="Node-1"
 CONTAINER_NAME="Node-1"
 IP_LOCAL_PORT=5660
-ENV_PATH=${__dir}/.env.defaults
+ENV_PATH=${__dir}/.env.production
 
 # parse command-line arguments
 for arg in "$@"
@@ -20,14 +20,24 @@ do
         ;;
         --help)
         # Display script usage
-        echo "Usage: bootnode.sh [OPTIONS]"
+        echo "Usage: ./node.sh [OPTIONS]"
         echo "Options:"
         echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: Node-1)"
+        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
         echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
         exit 0
         ;;
         *)
+        echo "Error: unexpect argument { $arg }"
+        echo "Please check and provide the input in the correct format."
+        echo ""
+        # Display script usage
+        echo "Usage: ./node.sh [OPTIONS]"
+        echo "Options:"
+        echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
+        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
+        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
+        exit 0
         # ignore unrecognized arguments
         ;;
     esac
