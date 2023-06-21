@@ -6,7 +6,7 @@ NODE_NUMBER="Node-1"
 CONTAINER_NAME="Node-1"
 IP_LOCAL_PORT=5660
 ENV_PATH=${__dir}/.env.defaults
-
+ENV_PD_PATH=${__dir}/.env.production
 # parse command-line arguments
 for arg in "$@"
 do
@@ -22,14 +22,24 @@ do
         ;;
         --help)
         # Display script usage
-        echo "Usage: bootnode.sh [OPTIONS]"
+        echo "Usage: ./bootnode.sh [OPTIONS]"
         echo "Options:"
         echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: Node-1)"
+        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
         echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
         exit 0
         ;;
         *)
+        echo "Error: unexpect argument { $arg }"
+        echo "Please check and provide the input in the correct format."
+        echo ""
+        # Display script usage
+        echo "Usage: ./bootnode.sh [OPTIONS]"
+        echo "Options:"
+        echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
+        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
+        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
+        exit 0
         # ignore unrecognized arguments
         ;;
     esac
@@ -81,18 +91,17 @@ BOOT_NODE_IP=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" ${CONTAINER_N
 BOOT_NODE_KEY_PUB=`cat ${KEY_PUB}`
 BOOT_NODE_ENODE=enode://${BOOT_NODE_KEY_PUB:2}@${BOOT_NODE_IP}:30303
 echo "Boot Node Enode: ${BOOT_NODE_ENODE}"
-
-
+cp ${ENV_PATH} ${ENV_PD_PATH}
 
 # Check if env.defaults file exists and if it contains the BOOT_NODE_ENODE variable
-if [[ -f ${ENV_PATH} && -n $(grep "BOOT_NODE_ENODE=" ${ENV_PATH}) ]]; then
+if [[ -f ${ENV_PD_PATH} && -n $(grep "BOOT_NODE_ENODE=" ${ENV_PD_PATH}) ]]; then
   # Update the existing BOOT_NODE_ENODE value
-  sed -i '' "s|BOOT_NODE_ENODE=.*|BOOT_NODE_ENODE=${BOOT_NODE_ENODE}|" ${ENV_PATH}
+  sed -i '' "s|BOOT_NODE_ENODE=.*|BOOT_NODE_ENODE=${BOOT_NODE_ENODE}|" ${ENV_PD_PATH}
 else
   # Check if the last character is a newline character
-  if [[ -s ${ENV_PATH} ]] && [[ -z $(tail -c 1 ${ENV_PATH}) ]]; then
-    echo "BOOT_NODE_ENODE=${BOOT_NODE_ENODE}" >> "${ENV_PATH}"
+  if [[ -s ${ENV_PD_PATH} ]] && [[ -z $(tail -c 1 ${ENV_PD_PATH}) ]]; then
+    echo "BOOT_NODE_ENODE=${BOOT_NODE_ENODE}" >> "${ENV_PD_PATH}"
   else
-    echo -e "\nBOOT_NODE_ENODE=${BOOT_NODE_ENODE}" >> "${ENV_PATH}"
+    echo -e "\nBOOT_NODE_ENODE=${BOOT_NODE_ENODE}" >> "${ENV_PD_PATH}"
   fi
 fi
