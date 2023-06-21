@@ -4,10 +4,17 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KEYS_DIR="${__dir}/networkFiles/keys"
 
-# 
+# Copy networkFiles/genesis.json to the current directory
 cp networkFiles/genesis.json ./genesis.json
-# Initialize counter
-counter=1
+
+# Find the highest numbered Node directory
+highest_node_dir=$(find "${__dir}" -type d -name "Node-*" | sort -r | head -n 1)
+echo ${highest_node_dir}
+# Extract the highest node number from the directory name
+highest_node_num=${highest_node_dir##*-}
+echo ${highest_node_num}
+# Initialize the counter with the next available number
+counter=$((highest_node_num + 1))
 
 # Loop through each subdirectory in KEYS_DIR
 for subdirectory in "${KEYS_DIR}"/*; do
