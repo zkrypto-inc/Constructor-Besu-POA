@@ -9,12 +9,12 @@ For detailed information about Hyperledger Besu, please refer to [here](https://
 ### Prerequisites
 - [Homebrew](https://brew.sh/)
 - Java JDK
-```
+```bash
 brew install openjdk
 ```
 
 ### install besu using Homebrew
-```
+```bash
 brew tap hyperledger/besu
 brew install hyperledger/besu/besu
 ```
@@ -23,7 +23,49 @@ brew install hyperledger/besu/besu
 ### Prerequisites
 - [Java JDK 17+](https://www.oracle.com/java/technologies/downloads/)
 
-### install from packaged binaries
+### Install jdk 20.0.1
+```bash
+wget https://download.oracle.com/java/20/latest/jdk-20_linux-x64_bin.tar.gz && sudo tar -zxvf jdk-20_linux-x64_bin.tar.gz -C /usr/lib/
+echo 'export JAVA_HOME=/usr/lib/jdk-20.0.1/' | sudo tee -a /etc/profile && source /etc/profile
+```
+
+### Besu setting
+```bash
+wget https://hyperledger.jfrog.io/hyperledger/besu-binaries/besu/23.4.1/besu-23.4.1.tar.gz && tar -zxvf besu-23.4.1.tar.gz -C /usr/lib/
+```
+
+### Bash alias
+```bash
+echo -e 'alias java="/usr/lib/jdk-20.0.1/bin/java"\nalias javac="/usr/lib/jdk-20.0.1/bin/javac"\nalias besu="/usr/lib/besu-23.4.1/bin/besu"' | sudo tee -a /etc/bashrc && source /etc/bashrc
+```
+
+### Install docker
+```bash
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+### Docker authentication
+```bash
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+id
+```
+
+If the text printed on the terminal is not similar to the following, relaunch the terminal or log in again.
+```
+uid=1000(ubuntu) ...,999(docker)
+```
+### Install from packaged binaries
 Download the [Besu packaged binaries](https://github.com/hyperledger/besu/releases).
 
 # Create a private network using IBFT 2.0
@@ -116,21 +158,21 @@ besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=
 # Test Validator
 For more information, see [hyperledger besu doc](https://besu.hyperledger.org/en/stable/private-networks/reference/api/#ibft_getvalidatorsbyblocknumber)
 
->## ibft_proposeValidatorVote
+## ibft_proposeValidatorVote
 Propose to add or remove a validator with the specified address.
 
 Parameters
 - address: string- account address
 - proposal: boolean - true to propose adding validator or false to propose removing validator
-```
+```bash
 curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_proposeValidatorVote","params":["42d4287eac8078828cf5f3486cfe601a275a49a5",true], "id":1}' http://127.0.0.1:[LOCAL_PORT]
 ```
 
->### ibft_getValidatorsByBlockNumber
+### ibft_getValidatorsByBlockNumber
 Lists the validators defined in the specified block.
 
 Parameters
 - blockNumber: string - integer representing a block number or one of the string tags latest, earliest, or pending, as described in Block Parameter
-```
+```bash
 curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_getValidatorsByBlockNumber","params":["latest"], "id":1}' http://127.0.0.1:[LOCAL_PORT]
 ```
