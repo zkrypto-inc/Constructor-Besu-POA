@@ -66,7 +66,20 @@ if test -n "${PRE_CONTAINER_NAME}"; then
 fi
 
 # create boot_node container
-docker create --name ${CONTAINER_NAME} -p ${IP_LOCAL_PORT}:8545 -p ${IP_LOCAL_PORT2}:8546 -p ${IP_LOCAL_PORT3}:30303 hyperledger/besu:latest --genesis-file=/genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all"
+docker create --name ${CONTAINER_NAME} \
+    -p ${IP_LOCAL_PORT}:8545 \
+    -p ${IP_LOCAL_PORT2}:8546 \
+    -p ${IP_LOCAL_PORT3}:30303 \
+    hyperledger/besu:21.10.9 \
+    --genesis-file=/genesis.json \
+    --rpc-http-enabled \
+    --rpc-http-api=ETH,NET,IBFT \
+    --rpc-http-cors-origins="all" \
+    --rpc-ws-enabled \
+    --rpc-ws-host=0.0.0.0 \
+    --rpc-ws-apis=ADMIN,ETH,MINER,WEB3,NET,PRIV,EEA \
+    --host-allowlist="*" \
+    --min-gas-price=0
 
 # setting boot_node container
 docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RESPONSE=`besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key`
+RESPONSE=`/usr/lib/besu-23.4.1/bin/besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key`
 
 ./copyKeys.sh
 
