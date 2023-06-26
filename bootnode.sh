@@ -70,6 +70,7 @@ docker create --name ${CONTAINER_NAME} \
     -p ${IP_LOCAL_PORT}:8545 \
     -p ${IP_LOCAL_PORT2}:8546 \
     -p ${IP_LOCAL_PORT3}:30303 \
+    --net host \
     hyperledger/besu:21.10.9 \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
