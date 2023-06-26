@@ -4,7 +4,7 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NUMBER="Node-1"
 CONTAINER_NAME="Node-1"
-IP_LOCAL_PORT=5660
+IP_LOCAL_PORT=8545
 ENV_PATH=${__dir}/.env.defaults
 ENV_PD_PATH=${__dir}/.env.production
 # parse command-line arguments
@@ -45,7 +45,7 @@ do
     esac
 done
 IP_LOCAL_PORT2=$(($IP_LOCAL_PORT + 1))
-IP_LOCAL_PORT3=$(($IP_LOCAL_PORT + 2))
+IP_LOCAL_PORT3=30303
 
 source ${ENV_PATH}
 
