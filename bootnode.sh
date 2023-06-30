@@ -4,9 +4,17 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NAME="Node-1"
 CONTAINER_NAME="BootNode"
-IP_LOCAL_PORT=8545
+
+# default ports
+RPC_HTTP_PORT=8545
+RPC_WS_PORT=$(($RPC_HTTP_PORT + 1))
+P2P_PORT=30303
+
 ENV_PATH=${__dir}/.env.defaults
 ENV_PD_PATH=${__dir}/.env.production
+
+HOST=false
+
 # parse command-line arguments
 for arg in "$@"
 do
@@ -17,16 +25,28 @@ do
         --NODE_NAME=*)
         NODE_NAME="${arg#*=}"
         ;;
-        --LOCAL_PORT=*)
-        IP_LOCAL_PORT="${arg#*=}"
+        --RPC_HTTP_PORT=*)
+        RPC_HTTP_PORT="${arg#*=}"
+        ;;
+        --RPC_WS_PORT=*)
+        RPC_WS_PORT="${arg#*=}"
+        ;;
+        --P2P_PORT=*)
+        P2P_PORT="${arg#*=}"
+        ;;
+        --HOST)
+        HOST=true
         ;;
         --help)
         # Display script usage
         echo "Usage: ./bootnode.sh [OPTIONS]"
         echo "Options:"
         echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NAME=VALUE        Specify the node number (default: BootNode)"
-        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 8545)"
+        echo "  --NODE_NAME=VALUE          Specify the node number (default: BootNode)"
+        echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
+        echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
+        echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
+        echo "  --HOST                     Run docker container has host network"
         exit 0
         ;;
         *)
@@ -38,14 +58,15 @@ do
         echo "Options:"
         echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
         echo "  --NODE_NAME=VALUE        Specify the node number (default: Node-1)"
-        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default:i 8545)"
+        echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
+        echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
+        echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
+        echo "  --HOST                     Run docker container has host network"
         exit 0
         # ignore unrecognized arguments
         ;;
     esac
 done
-IP_LOCAL_PORT2=$(($IP_LOCAL_PORT + 1))
-IP_LOCAL_PORT3=30303
 
 source ${ENV_PATH}
 
@@ -65,13 +86,13 @@ if test -n "${PRE_CONTAINER_NAME}"; then
   esac
 fi
 
-# create boot_node container
-docker create --name ${CONTAINER_NAME} \
-    -p ${IP_LOCAL_PORT}:8545 \
-    -p ${IP_LOCAL_PORT2}:8546 \
-    -p ${IP_LOCAL_PORT3}:30303 \
-    --net host \
-    hyperledger/besu:21.10.9 \
+# create boot node container
+CMD_DOCKER_CREATE="docker create \
+    --name ${CONTAINER_NAME} \
+    -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
+    -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
+    -p ${P2P_PORT}:${P2P_PORT} \
+    ${BESU_IMAGE} \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
     --rpc-http-api=ETH,NET,IBFT \
@@ -80,7 +101,17 @@ docker create --name ${CONTAINER_NAME} \
     --rpc-ws-host=0.0.0.0 \
     --rpc-ws-apis=ADMIN,ETH,MINER,WEB3,NET,PRIV,EEA \
     --host-allowlist="*" \
-    --min-gas-price=0
+    --min-gas-price=0 "
+
+if [ "${HOST}" = true ]; then
+  CMD_DOCKER_CREATE+="--net host"
+fi
+
+if eval ${CMD_DOCKER_CREATE}; then
+        echo "Successfully create docker container: ${CONTAINER_NAME}"
+    else
+        echo "Error: Cannot create docker container: ${CONTAINER_NAME}"
+fi
 
 # setting boot_node container
 docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json
@@ -88,9 +119,9 @@ docker cp ${KEY} ${CONTAINER_NAME}:/opt/besu/key
 docker cp ${KEY_PUB} ${CONTAINER_NAME}:/opt/besu/key.pub
 
 # print local port information
-echo "Local Port for JSON-RPC: ${IP_LOCAL_PORT}"
-echo "Local Port for WebSocket (WS): ${IP_LOCAL_PORT2}"
-echo "Local Port for Peer-to-Peer (P2P) communication: ${IP_LOCAL_PORT3}"
+echo "Local Port for JSON-RPC: ${RPC_HTTP_PORT}"
+echo "Local Port for WebSocket (WS): ${RPC_WS_PORT}"
+echo "Local Port for Peer-to-Peer (P2P) communication: ${P2P_PORT}"
 
 # start docker
 if docker start ${CONTAINER_NAME}; then
@@ -103,11 +134,18 @@ sleep 3
 # get ENODE KEY
 BOOT_NODE_IP=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" ${CONTAINER_NAME}`
 if [ -z "${BOOT_NODE_IP}" ]; then
-  BOOT_NODE_IP=`hostname -i | awk '{print $3}'`
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    BOOT_NODE_IP=`ipconfig getifaddr en0`
+  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    BOOT_NODE_IP=`hostname -i | awk '{print $3}'`
+  else
+    echo "Unsupported operating system"
+    exit 2
+  fi
 fi
 
 BOOT_NODE_KEY_PUB=`cat ${KEY_PUB}`
-BOOT_NODE_ENODE=enode://${BOOT_NODE_KEY_PUB:2}@${BOOT_NODE_IP}:30303
+BOOT_NODE_ENODE=enode://${BOOT_NODE_KEY_PUB:2}@${BOOT_NODE_IP}:${P2P_PORT}
 echo "Boot Node Enode: ${BOOT_NODE_ENODE}"
 cp ${ENV_PATH} ${ENV_PD_PATH}
 
