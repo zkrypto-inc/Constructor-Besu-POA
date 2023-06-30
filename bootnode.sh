@@ -91,8 +91,13 @@ CMD_DOCKER_CREATE="docker create \
     --name ${CONTAINER_NAME} \
     -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
     -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
-    -p ${P2P_PORT}:${P2P_PORT} \
-    ${BESU_IMAGE} \
+    -p ${P2P_PORT}:${P2P_PORT} "
+
+if [ "${HOST}" = true ]; then
+  CMD_DOCKER_CREATE+="--net host "
+fi
+
+CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
     --rpc-http-api=ETH,NET,IBFT \
@@ -101,11 +106,7 @@ CMD_DOCKER_CREATE="docker create \
     --rpc-ws-host=0.0.0.0 \
     --rpc-ws-apis=ADMIN,ETH,MINER,WEB3,NET,PRIV,EEA \
     --host-allowlist="*" \
-    --min-gas-price=0 "
-
-if [ "${HOST}" = true ]; then
-  CMD_DOCKER_CREATE+="--net host"
-fi
+    --min-gas-price=0"
 
 if eval ${CMD_DOCKER_CREATE}; then
         echo "Successfully create docker container: ${CONTAINER_NAME}"
