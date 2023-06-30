@@ -1,8 +1,8 @@
 #!/bin/bash
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NODE_NUMBER="Node-1"
-CONTAINER_NAME="Node-1"
-IP_LOCAL_PORT=5660
+NODE_NAME="Node"
+CONTAINER_NAME="Node"
+IP_LOCAL_PORT=8545
 ENV_PATH=${__dir}/.env.production
 
 # parse command-line arguments
@@ -12,8 +12,8 @@ do
         --CONTAINER_NAME=*)
         CONTAINER_NAME="${arg#*=}"
         ;;
-        --NODE_NUMBER=*)
-        NODE_NUMBER="Node-${arg#*=}"
+        --NODE_NAME=*)
+        NODE_NAME="${arg#*=}"
         ;;
         --LOCAL_PORT=*)
         IP_LOCAL_PORT="${arg#*=}"
@@ -22,9 +22,9 @@ do
         # Display script usage
         echo "Usage: ./node.sh [OPTIONS]"
         echo "Options:"
-        echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
-        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
+        echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node)"
+        echo "  --NODE_NAME=VALUE        Specify the node name (default: Node)"
+        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 8545)"
         exit 0
         ;;
         *)
@@ -34,9 +34,9 @@ do
         # Display script usage
         echo "Usage: ./node.sh [OPTIONS]"
         echo "Options:"
-        echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
-        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
+        echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node)"
+        echo "  --NODE_NAME=VALUE        Specify the node name (default: Node)"
+        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 8545)"
         exit 0
         # ignore unrecognized arguments
         ;;

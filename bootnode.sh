@@ -2,8 +2,8 @@
 
 # default values
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NODE_NUMBER="Node-1"
-CONTAINER_NAME="Node-1"
+NODE_NAME="Node-1"
+CONTAINER_NAME="BootNode"
 IP_LOCAL_PORT=8545
 ENV_PATH=${__dir}/.env.defaults
 ENV_PD_PATH=${__dir}/.env.production
@@ -14,8 +14,8 @@ do
         --CONTAINER_NAME=*)
         CONTAINER_NAME="${arg#*=}"
         ;;
-        --NODE_NUMBER=*)
-        NODE_NUMBER="Node-${arg#*=}"
+        --NODE_NAME=*)
+        NODE_NAME="${arg#*=}"
         ;;
         --LOCAL_PORT=*)
         IP_LOCAL_PORT="${arg#*=}"
@@ -25,8 +25,8 @@ do
         echo "Usage: ./bootnode.sh [OPTIONS]"
         echo "Options:"
         echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
-        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
+        echo "  --NODE_NAME=VALUE        Specify the node number (default: BootNode)"
+        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 8545)"
         exit 0
         ;;
         *)
@@ -37,8 +37,8 @@ do
         echo "Usage: ./bootnode.sh [OPTIONS]"
         echo "Options:"
         echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NUMBER=VALUE        Specify the node number (default: 1)"
-        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default: 5660)"
+        echo "  --NODE_NAME=VALUE        Specify the node number (default: Node-1)"
+        echo "  --LOCAL_PORT=VALUE      Specify the local port number for JSON-RPC (default:i 8545)"
         exit 0
         # ignore unrecognized arguments
         ;;
@@ -102,6 +102,10 @@ sleep 3
 
 # get ENODE KEY
 BOOT_NODE_IP=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" ${CONTAINER_NAME}`
+if [ -z "${BOOT_NODE_IP}" ]; then
+  BOOT_NODE_IP=`hostname -i | awk '{print $3}'`
+fi
+
 BOOT_NODE_KEY_PUB=`cat ${KEY_PUB}`
 BOOT_NODE_ENODE=enode://${BOOT_NODE_KEY_PUB:2}@${BOOT_NODE_IP}:30303
 echo "Boot Node Enode: ${BOOT_NODE_ENODE}"
