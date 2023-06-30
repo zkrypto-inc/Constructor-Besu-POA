@@ -7,8 +7,6 @@ RESPONSE=`/usr/lib/besu-23.4.1/bin/besu operator generate-blockchain-config --co
 
 ./copyKeys.sh
 
-NODE_DIR="/home/ubuntu/Constructor-Besu-IBFT/"
-
 ./bootnode.sh --CONTAINER_NAME="boot_node"
 
 sshpass -p "${NODE2_PWD}" scp -r Node-2 genesis.json .env.production "${NODE2}:${NODE_DIR}"
