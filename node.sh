@@ -102,6 +102,7 @@ CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --rpc-ws-host=0.0.0.0 \
     --rpc-ws-apis=ADMIN,ETH,MINER,WEB3,NET,PRIV,EEA \
     --host-allowlist="*" \
+    --bootnodes=${BOOT_NODE_ENODE} \
     --min-gas-price=0"
 
 if eval ${CMD_DOCKER_CREATE}; then
