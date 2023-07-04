@@ -81,7 +81,7 @@ if test -n "${PRE_CONTAINER_NAME}"; then
           docker rm ${PRE_CONTAINER_NAME}
           ;;
       *)
-          exit 1
+          exit 0
           ;;
   esac
 fi
@@ -112,12 +112,18 @@ if eval ${CMD_DOCKER_CREATE}; then
         echo "Successfully create docker container: ${CONTAINER_NAME}"
     else
         echo "Error: Cannot create docker container: ${CONTAINER_NAME}"
+        exit 1
 fi
 
 # setting boot_node container
-docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json
-docker cp ${KEY} ${CONTAINER_NAME}:/opt/besu/key
+docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json && \
+docker cp ${KEY} ${CONTAINER_NAME}:/opt/besu/key && \
 docker cp ${KEY_PUB} ${CONTAINER_NAME}:/opt/besu/key.pub
+
+if [ $? -ne 0 ]; then
+  echo "Error: Cannot copy files into container: ${CONTAINER_NAME}"
+  exit 2
+fi
 
 # print local port information
 echo "Local Port for JSON-RPC: ${RPC_HTTP_PORT}"
@@ -126,22 +132,20 @@ echo "Local Port for Peer-to-Peer (P2P) communication: ${P2P_PORT}"
 
 # start docker
 if docker start ${CONTAINER_NAME}; then
-    echo "Successfully start docker container: ${CONTAINER_NAME}"
+  echo "Successfully start docker container: ${CONTAINER_NAME}"
 else
-  exit 1
+  echo "Error: Cannot start docker container: ${CONTAINER_NAME}"
+  exit 3
 fi
 sleep 3
 
 # get ENODE KEY
-BOOT_NODE_IP=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" ${CONTAINER_NAME}`
-if [ -z "${BOOT_NODE_IP}" ]; then
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    BOOT_NODE_IP=`ipconfig getifaddr en0`
-  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    BOOT_NODE_IP=`hostname -i | awk '{print $3}'`
-  else
-    echo "Unsupported operating system"
-    exit 2
+if [ "${HOST}" = false ]; then
+  BOOT_NODE_IP=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" ${CONTAINER_NAME}`
+else
+  BOOT_NODE_IP=`hostname -I | awk '{print $2}'` # m
+  if [ -z "${BOOT_NODE_IP}" ]; then
+    read -r -p "Cannot find external IP automatically. Type your IP manually: " BOOT_NODE_IP
   fi
 fi
 

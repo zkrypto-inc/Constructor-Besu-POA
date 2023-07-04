@@ -78,7 +78,7 @@ if test -n "${PRE_CONTAINER_NAME}"; then
           docker rm ${PRE_CONTAINER_NAME}
           ;;
       *)
-          exit 1
+          exit 0
           ;;
   esac
 fi
@@ -109,12 +109,18 @@ if eval ${CMD_DOCKER_CREATE}; then
         echo "Successfully create docker container: ${CONTAINER_NAME}"
     else
         echo "Error: Cannot create docker container: ${CONTAINER_NAME}"
+        exit 1
 fi
 
 # setting node container
 docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json
 docker cp ${KEY} ${CONTAINER_NAME}:/opt/besu/key
 docker cp ${KEY_PUB} ${CONTAINER_NAME}:/opt/besu/key.pub
+
+if [ $? -ne 0 ]; then
+  echo "Error: Cannot copy files into container: ${CONTAINER_NAME}"
+  exit 2
+fi
 
 # print local port information
 echo "Local Port for JSON-RPC: ${RPC_HTTP_PORT}"
@@ -123,7 +129,8 @@ echo "Local Port for Peer-to-Peer (P2P) communication: ${P2P_PORT}"
 
 # start docker
 if docker start ${CONTAINER_NAME}; then
-    echo "Successfully start docker container: ${CONTAINER_NAME}"
+  echo "Successfully start docker container: ${CONTAINER_NAME}"
 else
-  exit 1
+  echo "Error: Cannot start docker container: ${CONTAINER_NAME}"
+  exit 3
 fi
