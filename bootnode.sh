@@ -14,6 +14,11 @@ ENV_PATH=${__dir}/.env.defaults
 ENV_PD_PATH=${__dir}/.env.production
 
 LOCAL=false
+USE_PODMAN=false
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  USE_PODMAN=true # use podman as default for os x  
+fi
 
 # parse command-line arguments
 for arg in "$@"
@@ -37,6 +42,9 @@ do
         --LOCAL)
         LOCAL=true
         ;;
+        --PODMAN)
+        USE_PODMAN=true
+        ;;
         --help)
         # Display script usage
         echo "Usage: ./bootnode.sh [OPTIONS]"
@@ -47,6 +55,7 @@ do
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
         echo "  --LOCAL                    Run nodes in local network"
+        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         ;;
         *)
@@ -62,11 +71,18 @@ do
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
         echo "  --LOCAL                    Run nodes in local network"
+        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         # ignore unrecognized arguments
         ;;
     esac
 done
+
+if [ "$USE_PODMAN" = true ]; then
+  function docker() {
+    podman "$@"
+  }
+fi 
 
 source ${ENV_PATH}
 
@@ -143,7 +159,14 @@ sleep 3
 if [ "${LOCAL}" = true ]; then
   BOOT_NODE_IP=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" ${CONTAINER_NAME}`
 else
-  BOOT_NODE_IP=`hostname -I | awk '{print $2}'` # m
+  if [[ "$OSTYPE" == "darwin"* ]]; then # OS X
+    BOOT_NODE_IP=`ipconfig getifaddr en0`
+  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then # linux
+    BOOT_NODE_IP=`hostname -I | awk '{print $2}'`
+  else
+    echo "Unsupported operating system"
+    exit 2
+  fi
   if [ -z "${BOOT_NODE_IP}" ]; then
     read -r -p "Cannot find external IP automatically. Type your IP manually: " BOOT_NODE_IP
   fi

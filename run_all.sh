@@ -1,6 +1,12 @@
 #!/bin/bash
 
-RESPONSE=`besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key`
+BESU_EXECUTABLE="besu"
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  BESU_EXECUTABLE="/usr/lib/besu-23.4.1/bin/besu"
+fi
+
+RESPONSE=`${BESU_EXECUTABLE} operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key`
 
 ./copyKeys.sh
 
