@@ -13,7 +13,12 @@ P2P_PORT=30303
 ENV_PATH=${__dir}/.env.defaults
 ENV_PD_PATH=${__dir}/.env.production
 
-HOST=false
+LOCAL=false
+USE_PODMAN=false
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  USE_PODMAN=true # use podman as default for os x  
+fi
 
 # parse command-line arguments
 for arg in "$@"
@@ -34,8 +39,11 @@ do
         --P2P_PORT=*)
         P2P_PORT="${arg#*=}"
         ;;
-        --HOST)
-        HOST=true
+        --LOCAL)
+        LOCAL=true
+        ;;
+        --PODMAN)
+        USE_PODMAN=true
         ;;
         --help)
         # Display script usage
@@ -46,7 +54,8 @@ do
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
-        echo "  --HOST                     Run docker container has host network"
+        echo "  --LOCAL                    Run nodes in local network"
+        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         ;;
         *)
@@ -57,16 +66,23 @@ do
         echo "Usage: ./bootnode.sh [OPTIONS]"
         echo "Options:"
         echo "  --CONTAINER_NAME=VALUE     Specify the container name (default: Node-1)"
-        echo "  --NODE_NAME=VALUE        Specify the node number (default: Node-1)"
+        echo "  --NODE_NAME=VALUE          Specify the node number (default: Node-1)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
-        echo "  --HOST                     Run docker container has host network"
+        echo "  --LOCAL                    Run nodes in local network"
+        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         # ignore unrecognized arguments
         ;;
     esac
 done
+
+if [ "$USE_PODMAN" = true ]; then
+  function docker() {
+    podman "$@"
+  }
+fi 
 
 source ${ENV_PATH}
 
@@ -91,20 +107,20 @@ CMD_DOCKER_CREATE="docker create \
     --name ${CONTAINER_NAME} \
     -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
     -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
-    -p ${P2P_PORT}:${P2P_PORT} "
-
-if [ "${HOST}" = true ]; then
-  CMD_DOCKER_CREATE+="--net host "
-fi
+    -p ${P2P_PORT}:${P2P_PORT} \
+    -p ${P2P_PORT}:${P2P_PORT}/udp "
 
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
     --rpc-http-api=ETH,NET,IBFT \
     --rpc-http-cors-origins="all" \
+    --rpc-http-port=${RPC_HTTP_PORT}
     --rpc-ws-enabled \
     --rpc-ws-host=0.0.0.0 \
+    --rpc-ws-port=${RPC_WS_PORT} \
     --rpc-ws-apis=ADMIN,ETH,MINER,WEB3,NET,PRIV,EEA \
+    --p2p-port=${P2P_PORT} \
     --host-allowlist="*" \
     --min-gas-price=0"
 
@@ -140,10 +156,17 @@ fi
 sleep 3
 
 # get ENODE KEY
-if [ "${HOST}" = false ]; then
+if [ "${LOCAL}" = true ]; then
   BOOT_NODE_IP=`docker inspect -f "{{ .NetworkSettings.IPAddress }}" ${CONTAINER_NAME}`
 else
-  BOOT_NODE_IP=`hostname -I | awk '{print $2}'` # m
+  if [[ "$OSTYPE" == "darwin"* ]]; then # OS X
+    BOOT_NODE_IP=`ipconfig getifaddr en0`
+  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then # linux
+    BOOT_NODE_IP=`hostname -I | awk '{print $2}'`
+  else
+    echo "Unsupported operating system"
+    exit 2
+  fi
   if [ -z "${BOOT_NODE_IP}" ]; then
     read -r -p "Cannot find external IP automatically. Type your IP manually: " BOOT_NODE_IP
   fi

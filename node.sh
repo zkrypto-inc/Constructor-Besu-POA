@@ -1,4 +1,5 @@
 #!/bin/bash
+
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NAME="Node"
 CONTAINER_NAME="Node"
@@ -10,7 +11,12 @@ P2P_PORT=30303
 
 ENV_PATH=${__dir}/.env.production
 
-HOST=false
+LOCAL=false
+USE_PODMAN=false
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  USE_PODMAN=true # use podman as default for os x
+fi
 
 # parse command-line arguments
 for arg in "$@"
@@ -31,8 +37,11 @@ do
         --P2P_PORT=*)
         P2P_PORT="${arg#*=}"
         ;;
-        --HOST)
-        HOST=true
+        --LOCAL)
+        LOCAL=true
+        ;;
+        --PODMAN)
+        USE_PODMAN=true
         ;;
         --help)
         # Display script usage
@@ -43,7 +52,8 @@ do
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
-        echo "  --HOST                     Run docker container has host network"
+        echo "  --LOCAL                    Run nodes in local network"
+        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         ;;
         *)
@@ -58,12 +68,19 @@ do
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
-        echo "  --HOST                     Run docker container has host network"
+        echo "  --LOCAL                    Run nodes in local network"
+        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         # ignore unrecognized arguments
         ;;
     esac
 done
+
+if [ "$USE_PODMAN" = true ]; then
+  function docker() {
+    podman "$@"
+  }
+fi
 
 source ${ENV_PATH}
 
@@ -87,20 +104,20 @@ fi
 CMD_DOCKER_CREATE="docker create --name ${CONTAINER_NAME} \
     -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
     -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
-    -p ${P2P_PORT}:${P2P_PORT} "
-
-if [ "${HOST}" = true ]; then
-  CMD_DOCKER_CREATE+="--net host "
-fi
+    -p ${P2P_PORT}:${P2P_PORT} \
+    -p ${P2P_PORT}:${P2P_PORT}/udp "
 
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
     --rpc-http-api=ETH,NET,IBFT \
     --rpc-http-cors-origins="all" \
+    --rpc-http-port=${RPC_HTTP_PORT}
     --rpc-ws-enabled \
     --rpc-ws-host=0.0.0.0 \
+    --rpc-ws-port=${RPC_WS_PORT} \
     --rpc-ws-apis=ADMIN,ETH,MINER,WEB3,NET,PRIV,EEA \
+    --p2p-port=${P2P_PORT} \
     --host-allowlist="*" \
     --bootnodes=${BOOT_NODE_ENODE} \
     --min-gas-price=0"
