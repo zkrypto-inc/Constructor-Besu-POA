@@ -13,7 +13,7 @@ RESPONSE=`${BESU_EXECUTABLE} operator generate-blockchain-config --config-file=i
 
 ./copyKeys.sh
 
-./bootnode.sh --CONTAINER_NAME="boot_node"
+./bootnode.sh --CONTAINER_NAME=boot_node
 
 sshpass -p "${NODE2_PWD}" scp -r Node-2 genesis.json .env.production "${NODE2}:${NODE2_DIR}"
 sshpass -p "${NODE3_PWD}" scp -r Node-3 genesis.json .env.production "${NODE3}:${NODE3_DIR}"
