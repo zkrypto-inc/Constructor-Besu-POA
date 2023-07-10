@@ -8,7 +8,7 @@ source ${ENV_PATH}
 read -r -p "Are you sure want to reset config? [y/n]" response
 case "$response" in
     [yY][eE][sS]|[yY])
-        rm -r genesis.json networkFiles Node-*
+        rm -r genesis.json nodeKeys
         docker stop $(docker ps -aqf ancestor=${BESU_IMAGE})
         docker rm $(docker ps -aqf ancestor=${BESU_IMAGE})
         ;;

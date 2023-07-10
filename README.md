@@ -11,6 +11,7 @@ For detailed information about Hyperledger Besu, please refer to [here](https://
 - Java JDK
 ```bash
 brew install openjdk
+pip3 install web3
 ```
 
 ### install besu using Homebrew
@@ -22,6 +23,12 @@ brew install hyperledger/besu/besu
 
 ### Prerequisites
 - [Java JDK 17+](https://www.oracle.com/java/technologies/downloads/)
+
+### Install pip3 and web3.py
+```bash
+sudo apt install python3-pip
+pip3 install web3
+```
 
 ### Install jdk 20.0.1
 ```bash
@@ -80,51 +87,9 @@ docker pull hyperledger/besu:latest
 ### change here
 BESU_IMAGE="hyperledger/besu:21.10.9"
 ```
-### 1. Create a configuration file
-make ibftConfigFile.json
-```json
-{
-  "genesis": {
-    "config": {
-      "chainId": 1337,
-      "berlinBlock": 0,
-      "ibft2": {
-        "blockperiodseconds": 2,
-        "epochlength": 30000,
-        "requesttimeoutseconds": 4
-      }
-    },
-    "nonce": "0x0",
-    "timestamp": "0x58ee40ba",
-    "gasLimit": "0x47b760",
-    "difficulty": "0x1",
-    "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
-    "coinbase": "0x0000000000000000000000000000000000000000",
-    "alloc": {
-      "fe3b557e8fb62b89f4916b721be55ceb828dbd73": {
-        "privateKey": "8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
-        "comment": "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
-        "balance": "0xad78ebc5ac6200000"
-      },
-      "627306090abaB3A6e1400e9345bC60c78a8BEf57": {
-        "privateKey": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
-        "comment": "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
-        "balance": "90000000000000000000000"
-      },
-      "f17f52151EbEF6C7334FAD080c5704D77216b732": {
-        "privateKey": "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f",
-        "comment": "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
-        "balance": "90000000000000000000000"
-      }
-    }
-  },
-  "blockchain": {
-    "nodes": {
-      "generate": true,
-      "count": 4
-    }
-  }
-}
+### 1. Generate node keys and a genesis file
+```bash
+python3 generation.py -n 4 -c qbft -al 1~4
 ```
 
 ### 2. Construct IBFT Network in local
@@ -133,17 +98,8 @@ make ibftConfigFile.json
 ```
 This script runs all procedures below.
 
-#### 2-1. Generate node keys and a genesis file
-```bash
-besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key
-```
 
-#### 2-2. Copy key to Node folder
-```bash
-./copyKeys.sh
-```
-
-#### 2-3. Start bootnode
+#### 2-1. Start bootnode
 ```bash
 ./bootnode.sh --CONTAINER_NAME="boot_node" --NODE_NAME=Node-1
 ```
@@ -153,7 +109,7 @@ example:
 BOOT_NODE_ENODE=enode://ddbf969239f2f5d2199856626128d082b03b270544fd4ffa03a30a9de35bdf1719525fc4e4bfc205e9cb32851199f43a1e1b93b48dd12582d9e7fba0fb19529b@172.17.0.2:30303
 ```
 
-#### 2-4. Start Node-2,3,4
+#### 2-2. Start Node-2,3,4
 ```bash
 ./node.sh --CONTAINER_NAME="Node-2" --NODE_NAME=Node-2 --RPC_HTTP_PORT=8555 --RPC_WS_PORT=8556 --P2P_PORT=30313
 ./node.sh --CONTAINER_NAME="Node-3" --NODE_NAME=Node-3 --RPC_HTTP_PORT=8565 --RPC_WS_PORT=8566 --P2P_PORT=30323
@@ -170,8 +126,7 @@ Please note that since sshpass does not automatically generate RSA key fingerpri
 ### example:
 ### NODE1="account@your.ip.addr"
 ### NODE1_PWD="password"
-NODE1=""
-NODE1_PWD=""
+KEY_DIR="./nodeKeys"
 NODE2=""
 NODE2_PWD=""
 NODE3=""
@@ -182,7 +137,6 @@ NODE4_PWD=""
 ### Specify your node directory
 ### example:
 ### NODE_DIR="/home/ubuntu/Constructor-Besu-IBFT/"
-NODE1_DIR=""
 NODE2_DIR=""
 NODE3_DIR=""
 NODE4_DIR=""
