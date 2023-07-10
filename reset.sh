@@ -1,7 +1,7 @@
 #!/bin/bash
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_PATH=${__dir}/.env.defaults
+ENV_PATH=${__dir}/.env.production
 
 source ${ENV_PATH}
 
