@@ -13,8 +13,6 @@ P2P_PORT=30303
 ENV_PATH=${__dir}/.env.defaults
 ENV_PD_PATH=${__dir}/.env.production
 
-source ${ENV_PATH}
-
 LOCAL=false
 
 # parse command-line arguments
@@ -70,6 +68,7 @@ do
     esac
 done
 
+source ${ENV_PATH}
 
 # check if container name already taken
 PRE_CONTAINER_NAME=`docker ps -aqf name=${CONTAINER_NAME}`
@@ -98,7 +97,7 @@ CMD_DOCKER_CREATE="docker create \
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
-    --rpc-http-api=ETH,NET,IBFT \
+    --rpc-http-api=ETH,NET,QBFT \
     --rpc-http-cors-origins="all" \
     --rpc-http-port=${RPC_HTTP_PORT}
     --rpc-ws-enabled \
