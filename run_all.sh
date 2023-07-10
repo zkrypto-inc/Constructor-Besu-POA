@@ -6,9 +6,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   BESU_EXECUTABLE="/usr/lib/besu-23.4.1/bin/besu"
 fi
 
-RESPONSE=`${BESU_EXECUTABLE} operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key`
-
-./copyKeys.sh
+RESPONSE=`python3 generation.py -n 4 -c qbft -al 1~4`
 
 ./bootnode.sh --CONTAINER_NAME=boot_node --NODE_NAME=Node-1 --LOCAL
 
