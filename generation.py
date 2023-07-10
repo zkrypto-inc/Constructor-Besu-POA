@@ -26,7 +26,7 @@ parser.add_argument('-v','--validator', help='validator column index. Specify th
 parser.add_argument('-al','--alloc', help='allocation column index. Specify the column index of key-pair file for allocation. Example: 1,2,3,4,5 or 1~5')
 
 # --amount
-parser.add_argument('-am','--amount', default="0xad78ebc5ac6200000", type=lambda x: f"0x{x}", help="allocation amount. Hex string with '0x' prefix.")
+parser.add_argument('-am','--amount', default="ad78ebc5ac6200000", type=lambda x: f"0x{x}", help="allocation amount. Hex string with '0x' prefix.")
 
 # 명령줄 인수 구문 분석
 args = parser.parse_args()
