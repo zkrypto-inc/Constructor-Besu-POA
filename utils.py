@@ -7,6 +7,7 @@ import argparse
 import os
 import ecdsa
 import shutil
+import glob
 def read_key_pair(path, key_name):
     file_path = os.path.join(path, key_name)
     result = []
@@ -138,16 +139,18 @@ def allocation(genesis, allocation_list, balance, path, file_name):
 
 def rewrite_node_key(path, accounts):
     number = 1
-    directory = os.path.join(path, 'nodeKeys')
-    os.makedirs(directory, exist_ok=True)
-    
-    # 기존 파일 삭제
-    for filename in os.listdir(directory):
-        if os.path.exists(os.path.join(directory, filename)):
-            shutil.rmtree(os.path.join(directory, filename))
+    # 현재 작업 디렉토리에서 "Node-"로 시작하는 모든 파일 및 디렉토리를 찾음
+    matches = glob.glob('Node-*')
+
+    # 각 매치에 대해 삭제 수행
+    for match in matches:
+        if os.path.isfile(match):
+            os.remove(match)  # 파일인 경우 삭제
+        elif os.path.isdir(match):
+            shutil.rmtree(match)  # 디렉토리인 경우 재귀적으로 삭제 
     # 새로운 파일 생성
     for acc in accounts:
-        filepath = os.path.join(directory, 'Node-' + str(number))
+        filepath = os.path.join(path, 'Node-' + str(number))
         os.makedirs(filepath, exist_ok=True)
 
         private_key=acc[0]

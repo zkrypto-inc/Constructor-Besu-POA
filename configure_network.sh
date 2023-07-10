@@ -13,6 +13,6 @@ RESPONSE=`python3 generation.py -n 4 -c qbft -al 1~4`
 
 ./bootnode.sh --CONTAINER_NAME=boot_node
 
-sshpass -p "${NODE2_PWD}" scp -r ${KEY_DIR}/Node-2 genesis.json .env.production "${NODE2}:${NODE2_DIR}"
-sshpass -p "${NODE3_PWD}" scp -r ${KEY_DIR}/Node-3 genesis.json .env.production "${NODE3}:${NODE3_DIR}"
-sshpass -p "${NODE4_PWD}" scp -r ${KEY_DIR}/Node-4 genesis.json .env.production "${NODE4}:${NODE4_DIR}"
+sshpass -p "${NODE2_PWD}" scp -r Node-2 genesis.json .env.production "${NODE2}:${NODE2_DIR}"
+sshpass -p "${NODE3_PWD}" scp -r Node-3 genesis.json .env.production "${NODE3}:${NODE3_DIR}"
+sshpass -p "${NODE4_PWD}" scp -r Node-4 genesis.json .env.production "${NODE4}:${NODE4_DIR}"
