@@ -11,12 +11,9 @@ P2P_PORT=30303
 
 ENV_PATH=${__dir}/.env.production
 
-LOCAL=false
-USE_PODMAN=false
+source ${ENV_PATH}
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  USE_PODMAN=true # use podman as default for os x
-fi
+LOCAL=false
 
 # parse command-line arguments
 for arg in "$@"
@@ -75,14 +72,6 @@ do
         ;;
     esac
 done
-
-if [ "$USE_PODMAN" = true ]; then
-  function docker() {
-    podman "$@"
-  }
-fi
-
-source ${ENV_PATH}
 
 # check if container name already taken
 PRE_CONTAINER_NAME=`docker ps -aqf name=${CONTAINER_NAME}`

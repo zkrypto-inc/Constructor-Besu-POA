@@ -2,13 +2,8 @@
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_PATH=${__dir}/.env.defaults
-source ${ENV_PATH}
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  function docker() {
-    podman "$@" 
-  }
-fi
+source ${ENV_PATH}
 
 read -r -p "Are you sure want to reset config? [y/n]" response
 case "$response" in

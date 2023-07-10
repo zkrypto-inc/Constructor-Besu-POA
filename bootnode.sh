@@ -13,12 +13,9 @@ P2P_PORT=30303
 ENV_PATH=${__dir}/.env.defaults
 ENV_PD_PATH=${__dir}/.env.production
 
-LOCAL=false
-USE_PODMAN=false
+source ${ENV_PATH}
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  USE_PODMAN=true # use podman as default for os x  
-fi
+LOCAL=false
 
 # parse command-line arguments
 for arg in "$@"
@@ -42,9 +39,6 @@ do
         --LOCAL)
         LOCAL=true
         ;;
-        --PODMAN)
-        USE_PODMAN=true
-        ;;
         --help)
         # Display script usage
         echo "Usage: ./bootnode.sh [OPTIONS]"
@@ -55,7 +49,6 @@ do
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
         echo "  --LOCAL                    Run nodes in local network"
-        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         ;;
         *)
@@ -71,20 +64,12 @@ do
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
         echo "  --LOCAL                    Run nodes in local network"
-        echo "  --PODMAN                   Use podman as container engine"
         exit 0
         # ignore unrecognized arguments
         ;;
     esac
 done
 
-if [ "$USE_PODMAN" = true ]; then
-  function docker() {
-    podman "$@"
-  }
-fi 
-
-source ${ENV_PATH}
 
 # check if container name already taken
 PRE_CONTAINER_NAME=`docker ps -aqf name=${CONTAINER_NAME}`
