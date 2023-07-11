@@ -89,10 +89,12 @@ CMD_DOCKER_CREATE="docker create --name ${CONTAINER_NAME} \
     -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
     -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
     -p ${P2P_PORT}:${P2P_PORT} \
-    -p ${P2P_PORT}:${P2P_PORT}/udp "
+    -p ${P2P_PORT}:${P2P_PORT}/udp \
+    -v ${DATA}:/var/lib/besu "
 
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
-    --genesis-file=/genesis.json \
+    --genesis-file=genesis.json \
+    --data-path=/var/lib/besu \
     --rpc-http-enabled \
     --rpc-http-api=ETH,NET,IBFT \
     --rpc-http-cors-origins="all" \
@@ -114,8 +116,8 @@ if eval ${CMD_DOCKER_CREATE}; then
 fi
 
 # setting node container
-docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json
-docker cp ${KEY} ${CONTAINER_NAME}:/opt/besu/key
+docker cp ${GENESIS} ${CONTAINER_NAME}:/opt/besu/genesis.json && \
+docker cp ${KEY} ${CONTAINER_NAME}:/opt/besu/key && \
 docker cp ${KEY_PUB} ${CONTAINER_NAME}:/opt/besu/key.pub
 
 if [ $? -ne 0 ]; then
