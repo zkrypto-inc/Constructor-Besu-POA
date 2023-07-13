@@ -1,5 +1,5 @@
 # Construct Besu POA
-This project covers the process of configuring IBFT (Istanbul BFT) using Hyperledger Besu. Hyperledger Besu is an open-source Ethereum client used for building Ethereum-based and Ethereum-compatible blockchain networks.
+This project covers the process of configuring IBFT2 and QBFTusing Hyperledger Besu. Hyperledger Besu is an open-source Ethereum client used for building Ethereum-based and Ethereum-compatible blockchain networks.
 
 For detailed information about Hyperledger Besu, please refer to [here](https://besu.hyperledger.org/en/stable/). The provided link contains comprehensive details about Besu's features, architecture, documentation, and community.
 # install besu
@@ -97,11 +97,16 @@ docker pull hyperledger/besu:latest
 BESU_IMAGE="hyperledger/besu:21.10.9"
 ```
 ### 1. Generate node keys and a genesis file
+## 1-1 QBFT
 ```bash
 python3 generation.py -n 4 -c qbft -al 1~4
 ```
+## 1-2 IBFT
+```bash
+python3 generation.py -n 4 -c ibft2 -al 1~4
+```
 
-### 2. Construct IBFT Network in local
+### 2. Construct QBFT Network in local
 ```bash
 ./run_all.sh
 ```
