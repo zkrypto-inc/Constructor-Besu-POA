@@ -84,7 +84,7 @@ uid=1000(ubuntu) ...,999(docker)
 ### Install from packaged binaries
 Download the [Besu packaged binaries](https://github.com/hyperledger/besu/releases).
 
-# Create a private network using IBFT 2.0
+# Create a private network using QBFT
 ## Prerequisites
 - install [Docker Desktop](https://docs.docker.com/get-docker/)
 - download docker image
