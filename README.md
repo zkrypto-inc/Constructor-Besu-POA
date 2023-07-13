@@ -97,11 +97,11 @@ docker pull hyperledger/besu:latest
 BESU_IMAGE="hyperledger/besu:21.10.9"
 ```
 ### 1. Generate node keys and a genesis file
-## 1-1 QBFT
+### 1-1 QBFT
 ```bash
 python3 generation.py -n 4 -c qbft -al 1~4
 ```
-## 1-2 IBFT
+### 1-2 IBFT
 ```bash
 python3 generation.py -n 4 -c ibft2 -al 1~4
 ```
