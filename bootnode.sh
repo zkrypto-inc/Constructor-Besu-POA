@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # default values
+
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NAME="Node-1"
 CONTAINER_NAME="BootNode"
@@ -70,7 +71,6 @@ do
     esac
 done
 
-
 # check if container name already taken
 PRE_CONTAINER_NAME=`docker ps -aqf name=${CONTAINER_NAME}`
 
@@ -86,29 +86,34 @@ if test -n "${PRE_CONTAINER_NAME}"; then
           ;;
   esac
 fi
+echo "--- ${CONTAINER_NAME} setting ---"
 
 # create boot node container
-CMD_DOCKER_CREATE="docker create \
-    --name ${CONTAINER_NAME} \
+CMD_DOCKER_CREATE="docker create --name ${CONTAINER_NAME} \
     -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
     -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
     -p ${P2P_PORT}:${P2P_PORT} \
-    -p ${P2P_PORT}:${P2P_PORT}/udp "
+    -p ${P2P_PORT}:${P2P_PORT}/udp \
+    -v ${__dir}/${NODE_NAME}/database:/opt/besu/database/ "
+
+if [ "$USE_PODMAN" = true ]; then
+  CMD_DOCKER_CREATE+="-u root "
+fi
 
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
-    --rpc-http-api=ETH,NET,IBFT \
+    --rpc-http-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3 \
     --rpc-http-cors-origins="all" \
     --rpc-http-port=${RPC_HTTP_PORT}
     --rpc-ws-enabled \
     --rpc-ws-host=0.0.0.0 \
     --rpc-ws-port=${RPC_WS_PORT} \
-    --rpc-ws-apis=ADMIN,ETH,MINER,WEB3,NET,PRIV,EEA \
+    --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3 \
     --p2p-port=${P2P_PORT} \
     --host-allowlist="*" \
     --min-gas-price=0"
-
+    
 if eval ${CMD_DOCKER_CREATE}; then
         echo "Successfully create docker container: ${CONTAINER_NAME}"
     else

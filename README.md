@@ -5,13 +5,21 @@ For detailed information about Hyperledger Besu, please refer to [here](https://
 # install besu
 
 
-## MacOS
+## **MacOS**
 ### Prerequisites
 - [Homebrew](https://brew.sh/)
 - Java JDK
+- python3 library(web3, ecdsa)
 ```bash
 brew install openjdk
 pip3 install web3
+pip3 install ecdsa
+```
+### If using Podman instead of Docker Desktop
+```
+brew install podman
+podman machine init -v ${HOME}:${HOME} --cpus [NUMBER] --disk-size [NUMER : GB] --memory [NUMBER : MB]
+podman machine start
 ```
 
 ### install besu using Homebrew
@@ -19,15 +27,16 @@ pip3 install web3
 brew tap hyperledger/besu
 brew install hyperledger/besu/besu
 ```
-### Linux / Unix
+## **Linux / Unix**
 
 ### Prerequisites
 - [Java JDK 17+](https://www.oracle.com/java/technologies/downloads/)
 
-### Install pip3 and web3.py
+### Install pip3 and python3 library
 ```bash
 sudo apt install python3-pip
 pip3 install web3
+pip3 install ecdsa
 ```
 
 ### Install jdk 20.0.1
@@ -99,7 +108,7 @@ python3 generation.py -n 4 -c qbft -al 1~4
 This script runs all procedures below.
 
 
-#### 2-1. Start bootnode
+#### 2-1. Start bootnode in local
 ```bash
 ./bootnode.sh --CONTAINER_NAME="boot_node" --NODE_NAME=Node-1
 ```
@@ -109,24 +118,24 @@ example:
 BOOT_NODE_ENODE=enode://ddbf969239f2f5d2199856626128d082b03b270544fd4ffa03a30a9de35bdf1719525fc4e4bfc205e9cb32851199f43a1e1b93b48dd12582d9e7fba0fb19529b@172.17.0.2:30303
 ```
 
-#### 2-2. Start Node-2,3,4
+#### 2-2. Start Node-2,3,4 in local
 ```bash
-./node.sh --CONTAINER_NAME="Node-2" --NODE_NAME=Node-2 --RPC_HTTP_PORT=8555 --RPC_WS_PORT=8556 --P2P_PORT=30313
-./node.sh --CONTAINER_NAME="Node-3" --NODE_NAME=Node-3 --RPC_HTTP_PORT=8565 --RPC_WS_PORT=8566 --P2P_PORT=30323
-./node.sh --CONTAINER_NAME="Node-4" --NODE_NAME=Node-4 --RPC_HTTP_PORT=8575 --RPC_WS_PORT=8576 --P2P_PORT=30333
+./node.sh --CONTAINER_NAME="Node-2" --NODE_NAME=Node-2 --RPC_HTTP_PORT=8555 --RPC_WS_PORT=8556 --P2P_PORT=30313 --LOCAL
+./node.sh --CONTAINER_NAME="Node-3" --NODE_NAME=Node-3 --RPC_HTTP_PORT=8565 --RPC_WS_PORT=8566 --P2P_PORT=30323 --LOCAL
+./node.sh --CONTAINER_NAME="Node-4" --NODE_NAME=Node-4 --RPC_HTTP_PORT=8575 --RPC_WS_PORT=8576 --P2P_PORT=30333 --LOCAL
 ```
 
 ### 3. Construct Network
 Run the 'configure_network.sh' script to set up a network with four hosts on the same network.  
 Before running the script, make sure to specify your hosts' information in the '.env.network' file.
-**Note.** This script executes commands such as 'sshpass' and 'scp' to transfer configuration files to each host.  
+
+> **Note.** This script executes commands such as 'sshpass' and 'scp' to transfer configuration files to each host.  
 Please note that since sshpass does not automatically generate RSA key fingerprints, the user needs to manually connect to each host at first time.
 ```bash
 ### Specify your node's account and password
 ### example:
 ### NODE1="account@your.ip.addr"
 ### NODE1_PWD="password"
-KEY_DIR="./nodeKeys"
 NODE2=""
 NODE2_PWD=""
 NODE3=""
@@ -147,12 +156,12 @@ NODE4_DIR=""
 ./configure_network.sh
 ```
 
-#### 3-1. Start Node-2,3,4
+#### 3-1. Start Node-2,3,4 each host
 he configuration script launches the boot node (Node-1). To start the remaining nodes, run the following command on each host.
 ```bash
-./node.sh --NODE_NAME=Node-2 --HOST # In Node-2
-./node.sh --NODE_NAME=Node-3 --HOST # In Node-3
-./node.sh --NODE_NAME=Node-4 --HOST # In Node-4
+./node.sh --NODE_NAME=Node-2 # In Node-2
+./node.sh --NODE_NAME=Node-3 # In Node-3
+./node.sh --NODE_NAME=Node-4 # In Node-4
 ```
 
 ### 4. Reset Network
