@@ -1,9 +1,7 @@
 from web3 import Web3
-from rlp import encode
-from rlp import decode
+from rlp import encode, decode
 import csv
 import json
-import argparse
 import os
 import ecdsa
 import shutil
@@ -152,7 +150,7 @@ def rewrite_node_key(path, accounts):
     for acc in accounts:
         filepath = os.path.join(path, 'Node-' + str(number))
         os.makedirs(filepath, exist_ok=True)
-
+        os.makedirs(os.path.join(filepath, 'database'), exist_ok=True)
         private_key=acc[0]
         # 비밀 키를 바이트열로 변환
         private_key_bytes = bytes.fromhex(private_key)
