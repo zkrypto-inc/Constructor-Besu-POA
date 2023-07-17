@@ -179,7 +179,7 @@ If you have configured a network across distributed hosts using configure_networ
 # Test Validator
 For more information, see [hyperledger besu doc](https://besu.hyperledger.org/en/stable/private-networks/reference/api/#ibft_getvalidatorsbyblocknumber)
 
-## ibft_proposeValidatorVote
+## qbft_proposeValidatorVote
 Propose to add or remove a validator with the specified address.
 
 Parameters
@@ -189,7 +189,7 @@ Parameters
 curl -X POST --data '{"jsonrpc":"2.0","method":"qbft_proposeValidatorVote","params":["42d4287eac8078828cf5f3486cfe601a275a49a5",true], "id":1}' http://127.0.0.1:[LOCAL_PORT]
 ```
 
-### ibft_getValidatorsByBlockNumber
+### qbft_getValidatorsByBlockNumber
 Lists the validators defined in the specified block.
 
 Parameters
