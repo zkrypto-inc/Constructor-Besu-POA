@@ -186,7 +186,7 @@ Parameters
 - address: string- account address
 - proposal: boolean - true to propose adding validator or false to propose removing validator
 ```bash
-curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_proposeValidatorVote","params":["42d4287eac8078828cf5f3486cfe601a275a49a5",true], "id":1}' http://127.0.0.1:[LOCAL_PORT]
+curl -X POST --data '{"jsonrpc":"2.0","method":"qbft_proposeValidatorVote","params":["42d4287eac8078828cf5f3486cfe601a275a49a5",true], "id":1}' http://127.0.0.1:[LOCAL_PORT]
 ```
 
 ### ibft_getValidatorsByBlockNumber
@@ -195,5 +195,5 @@ Lists the validators defined in the specified block.
 Parameters
 - blockNumber: string - integer representing a block number or one of the string tags latest, earliest, or pending, as described in Block Parameter
 ```bash
-curl -X POST --data '{"jsonrpc":"2.0","method":"ibft_getValidatorsByBlockNumber","params":["latest"], "id":1}' http://127.0.0.1:[LOCAL_PORT]
+curl -X POST --data '{"jsonrpc":"2.0","method":"qbft_getValidatorsByBlockNumber","params":["latest"], "id":1}' http://127.0.0.1:[LOCAL_PORT]
 ```
