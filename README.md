@@ -2,7 +2,7 @@
 This project covers the process of configuring IBFT2 and QBFTusing Hyperledger Besu. Hyperledger Besu is an open-source Ethereum client used for building Ethereum-based and Ethereum-compatible blockchain networks.
 
 For detailed information about Hyperledger Besu, please refer to [here](https://besu.hyperledger.org/en/stable/). The provided link contains comprehensive details about Besu's features, architecture, documentation, and community.
-# install besu
+# install besu   
 
 
 ## **MacOS**
@@ -85,7 +85,7 @@ uid=1000(ubuntu) ...,999(docker)
 Download the [Besu packaged binaries](https://github.com/hyperledger/besu/releases).
 
 # Create a private network using QBFT
-## Prerequisites
+### Prerequisites
 - install [Docker Desktop](https://docs.docker.com/get-docker/)
 - download docker image
 ```bash
@@ -96,24 +96,25 @@ docker pull hyperledger/besu:latest
 ### change here
 BESU_IMAGE="hyperledger/besu:21.10.9"
 ```
-### 1. Generate node keys and a genesis file
-### 1-1 QBFT
-```bash
-python3 generation.py -n 4 -c qbft -al 1~4
-```
-### 1-2 IBFT
-```bash
-python3 generation.py -n 4 -c ibft2 -al 1~4
-```
 
-### 2. Construct QBFT Network in local
+### Run all script automatically (Construct besu locally)
 ```bash
 ./run_all.sh
 ```
-This script runs all procedures below.
+This script automatically runs all of the setup steps below.
 
-
-#### 2-1. Start bootnode in local
+### Construct besu locally step by step
+#### 1. generate node keys and a genesis file
+#### QBFT
+```bash
+python3 generation.py -n 4 -c qbft -al 1~4
+```
+#### IBFT
+If you want to construct with IBFT, you need to add IBFT to the --rpc-http-apis option in bootnode.sh and node.sh files.
+```bash
+python3 generation.py -n 4 -c ibft2 -al 1~4
+```
+#### 2. Start bootnode in local
 ```bash
 ./bootnode.sh --CONTAINER_NAME="boot_node" --NODE_NAME=Node-1
 ```
@@ -123,19 +124,21 @@ example:
 BOOT_NODE_ENODE=enode://ddbf969239f2f5d2199856626128d082b03b270544fd4ffa03a30a9de35bdf1719525fc4e4bfc205e9cb32851199f43a1e1b93b48dd12582d9e7fba0fb19529b@172.17.0.2:30303
 ```
 
-#### 2-2. Start Node-2,3,4 in local
+#### 3. Start Node-2,3,4 in local
 ```bash
 ./node.sh --CONTAINER_NAME="Node-2" --NODE_NAME=Node-2 --RPC_HTTP_PORT=8555 --RPC_WS_PORT=8556 --P2P_PORT=30313 --LOCAL
 ./node.sh --CONTAINER_NAME="Node-3" --NODE_NAME=Node-3 --RPC_HTTP_PORT=8565 --RPC_WS_PORT=8566 --P2P_PORT=30323 --LOCAL
 ./node.sh --CONTAINER_NAME="Node-4" --NODE_NAME=Node-4 --RPC_HTTP_PORT=8575 --RPC_WS_PORT=8576 --P2P_PORT=30333 --LOCAL
 ```
 
-### 3. Construct Network
+### Construct Network by 4 Computer
+
+#### 1. Configuration (see .env.network file)
 Run the 'configure_network.sh' script to set up a network with four hosts on the same network.  
 Before running the script, make sure to specify your hosts' information in the '.env.network' file.
 
 > **Note.** This script executes commands such as 'sshpass' and 'scp' to transfer configuration files to each host.  
-Please note that since sshpass does not automatically generate RSA key fingerprints, the user needs to manually connect to each host at first time.
+Please note that since sshpass does not automatically generate RSA key fingerprints, the user needs to manually connect to each host at first time by  `ssh {user_name}@{ip_address}`
 ```bash
 ### Specify your node's account and password
 ### example:
@@ -161,7 +164,7 @@ NODE4_DIR=""
 ./configure_network.sh
 ```
 
-#### 3-1. Start Node-2,3,4 each host
+#### 2. Start Node-2,3,4 each computer
 he configuration script launches the boot node (Node-1). To start the remaining nodes, run the following command on each host.
 ```bash
 ./node.sh --NODE_NAME=Node-2 # In Node-2
@@ -169,11 +172,16 @@ he configuration script launches the boot node (Node-1). To start the remaining 
 ./node.sh --NODE_NAME=Node-4 # In Node-4
 ```
 
-### 4. Reset Network
+### Reset Network
 This script deletes all containers created from the Besu image and removes the associated configuration files (e.g., genesis file, Node directory, ...).  
 If you have configured a network across distributed hosts using configure_network.sh, you should execute this step on each host.
 ```bash
 ./reset.sh
+```
+
+### Make some key-pair
+```
+python3 generation.py -n [Number of key-pair] -g userKey.csv
 ```
 
 # Test Validator
