@@ -3,3 +3,9 @@ networkFiles/*
 *.json
 
 .env*
+
+# editor files
+.idea
+
+# python cache files
+__pycache__/
