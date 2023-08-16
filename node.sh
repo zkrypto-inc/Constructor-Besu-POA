@@ -101,13 +101,13 @@ fi
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
-    --rpc-http-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3 \
+    --rpc-http-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --rpc-http-cors-origins="all" \
     --rpc-http-port=${RPC_HTTP_PORT}
     --rpc-ws-enabled \
     --rpc-ws-host=0.0.0.0 \
     --rpc-ws-port=${RPC_WS_PORT} \
-    --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3 \
+    --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --p2p-port=${P2P_PORT} \
     --host-allowlist="*" \
     --bootnodes=${BOOT_NODE_ENODE} \
