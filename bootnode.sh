@@ -93,14 +93,14 @@ CMD_DOCKER_CREATE="docker create --name ${CONTAINER_NAME} \
     -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
     -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
     -p ${P2P_PORT}:${P2P_PORT} \
-    -p ${P2P_PORT}:${P2P_PORT}/udp \
-    -v ${__dir}/${NODE_NAME}/database:/opt/besu/database/ "
+    -p ${P2P_PORT}:${P2P_PORT}/udp "
 
 if [ "$USE_PODMAN" = true ]; then
   CMD_DOCKER_CREATE+="-u root "
 fi
 
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
+    --rpc-http-max-active-connections=1000 \
     --genesis-file=/genesis.json \
     --rpc-http-enabled \
     --rpc-http-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
@@ -111,6 +111,7 @@ CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --rpc-ws-port=${RPC_WS_PORT} \
     --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --p2p-port=${P2P_PORT} \
+    --tx-pool-max-size=16000 \
     --host-allowlist="*" \
     --min-gas-price=0"
     

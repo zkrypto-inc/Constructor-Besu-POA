@@ -6,14 +6,47 @@ For detailed information about Hyperledger Besu, please refer to [here](https://
 
 
 ## **MacOS**
+
+### If using multipass
+
+#### Setup Multipass
+```bash
+brew install --cask multipass
+multipass launch --name u22 --cpus [number] --disk [number]G --memory [number]G --network en0
+```
+ex)multipass launch --name u22 --cpus 8 --disk 500G --memory 16G --network en0
+
+#### SSH setting
+```bash
+multipass shell u22
+sudo passwd ubuntu
+//input new password
+
+sudo passwd
+//input new password
+sudo apt-get update
+
+sudo vim /etc/ssh/sshd_config
+// change no to yes
+PasswordAuthentication yes
+
+systemctl restart sshd
+```
+
+
 ### Prerequisites
 - [Homebrew](https://brew.sh/)
 - Java JDK
 - python3 library(web3, ecdsa)
 ```bash
 brew install openjdk
-pip3 install web3
-pip3 install ecdsa
+brew install pipenv
+cd Constructor-Besu-IBFT
+pipenv shell
+pipenv --python 3.9
+pipenv install web3
+pipenv install ecdsa
+pipenv install urllib3==1.26.6
 ```
 ### If using Podman instead of Docker Desktop
 ```
@@ -34,7 +67,14 @@ brew install hyperledger/besu/besu
 
 ### Install pip3 and python3 library
 ```bash
+sudo apt-get update
+sudo apt-get install pipenv
+sudo systemctl enable ssh
+sudo systemctl start ssh
+sudo ufw allow ssh
+sudo apt-get install openssh-client
 sudo apt install python3-pip
+pip3 install --user pipenv
 pip3 install web3
 pip3 install ecdsa
 ```

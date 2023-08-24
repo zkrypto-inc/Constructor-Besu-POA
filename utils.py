@@ -136,16 +136,16 @@ def allocation(genesis, allocation_list, balance, path, file_name):
     return genesis
 
 def rewrite_node_key(path, accounts):
-    number = 1
-    # 현재 작업 디렉토리에서 "Node-"로 시작하는 모든 파일 및 디렉토리를 찾음
-    matches = glob.glob('Node-*')
+    # 현재 작업 디렉토리에서 "Node-"로 시작하는 모든 디렉토리를 찾아 그 번호를 기준으로 정렬
+    node_dirs = sorted([d for d in glob.glob('Node-*') if os.path.isdir(d)])
 
-    # 각 매치에 대해 삭제 수행
-    for match in matches:
-        if os.path.isfile(match):
-            os.remove(match)  # 파일인 경우 삭제
-        elif os.path.isdir(match):
-            shutil.rmtree(match)  # 디렉토리인 경우 재귀적으로 삭제 
+    # 마지막 번호 찾기
+    if node_dirs:
+        last_number = int(node_dirs[-1].split('-')[-1])
+        number = last_number + 1
+    else:
+        number = 1
+
     # 새로운 파일 생성
     for acc in accounts:
         filepath = os.path.join(path, 'Node-' + str(number))
