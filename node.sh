@@ -8,6 +8,7 @@ CONTAINER_NAME="Node"
 RPC_HTTP_PORT=8545
 RPC_WS_PORT=$(($RPC_HTTP_PORT + 1))
 P2P_PORT=30303
+MAX_HEAP_SIZE="8g"
 
 ENV_PATH=${__dir}/.env.production
 
@@ -32,6 +33,9 @@ do
         --P2P_PORT=*)
         P2P_PORT="${arg#*=}"
         ;;
+        --MAX_HEAP_SIZE=*)
+        MAX_HEAP_SIZE="${arg#*=}"
+        ;;
         --LOCAL)
         LOCAL=true
         ;;
@@ -44,6 +48,7 @@ do
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
+        echo "  --MAX_HEAP_SIZE            Specify the maximum heap size for besu (default: 8g)"
         echo "  --LOCAL                    Run nodes in local network"
         exit 0
         ;;
@@ -59,6 +64,7 @@ do
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for HTTP JSON-RPC (default: 8545)"
         echo "  --RPC_WS_PORT=VALUE        Specify the local port number for WS JSON-RPC (default: 8546)"
         echo "  --RPC_HTTP_PORT=VALUE      Specify the local port number for P2P (default: 30303)"
+        echo "  --MAX_HEAP_SIZE            Specify the maximum heap size for besu (default: 8g)"
         echo "  --LOCAL                    Run nodes in local network"
         exit 0
         # ignore unrecognized arguments
@@ -91,27 +97,31 @@ CMD_DOCKER_CREATE="docker create --name ${CONTAINER_NAME} \
     -p ${RPC_HTTP_PORT}:${RPC_HTTP_PORT} \
     -p ${RPC_WS_PORT}:${RPC_WS_PORT} \
     -p ${P2P_PORT}:${P2P_PORT} \
-    -p ${P2P_PORT}:${P2P_PORT}/udp "
+    -p ${P2P_PORT}:${P2P_PORT}/udp \
+    -e BESU_OPTS=-Xmx${MAX_HEAP_SIZE} "
 
 if [ "$USE_PODMAN" = true ]; then
   CMD_DOCKER_CREATE+="-u root "
 fi
 
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
-    --rpc-http-max-active-connections=1000 \
-    --genesis-file=/genesis.json \
-    --rpc-http-enabled \
+    --genesis-file=genesis.json \
     --rpc-http-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --rpc-http-cors-origins="all" \
-    --rpc-http-port=${RPC_HTTP_PORT}
-    --rpc-ws-enabled \
+    --rpc-http-port=${RPC_HTTP_PORT} \
     --rpc-ws-host=0.0.0.0 \
     --rpc-ws-port=${RPC_WS_PORT} \
     --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --p2p-port=${P2P_PORT} \
-    --tx-pool-max-size=16000 \
+    --rpc-http-max-active-connections=1000 \
+    --rpc-ws-max-frame-size=104857600 \
+    --graphql-http-enabled=true \
+    --revert-reason-enabled=true \
+    --Xlayered-tx-pool=true \
     --host-allowlist="*" \
     --bootnodes=${BOOT_NODE_ENODE} \
+    --rpc-http-enabled \
+    --rpc-ws-enabled \
     --min-gas-price=0"
 
 if eval ${CMD_DOCKER_CREATE}; then
@@ -122,7 +132,7 @@ if eval ${CMD_DOCKER_CREATE}; then
 fi
 
 # setting node container
-docker cp ${GENESIS} ${CONTAINER_NAME}:/genesis.json
+docker cp ${GENESIS} ${CONTAINER_NAME}:/opt/besu/genesis.json
 docker cp ${KEY} ${CONTAINER_NAME}:/opt/besu/key
 docker cp ${KEY_PUB} ${CONTAINER_NAME}:/opt/besu/key.pub
 
