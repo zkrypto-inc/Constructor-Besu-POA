@@ -100,11 +100,9 @@ fi
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --rpc-http-max-active-connections=1000 \
     --genesis-file=/genesis.json \
-    --rpc-http-enabled \
     --rpc-http-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --rpc-http-cors-origins="all" \
     --rpc-http-port=${RPC_HTTP_PORT}
-    --rpc-ws-enabled \
     --rpc-ws-host=0.0.0.0 \
     --rpc-ws-port=${RPC_WS_PORT} \
     --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
@@ -112,7 +110,14 @@ CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --tx-pool-max-size=16000 \
     --host-allowlist="*" \
     --bootnodes=${BOOT_NODE_ENODE} \
-    --min-gas-price=0"
+    --min-gas-price=0 \
+    --rpc-ws-max-frame-size=104857600 \
+    --Xlayered-tx-pool-layer-max-capacity=500000000 \
+    --Xlayered-tx-pool-max-prioritized=16000 \
+    --Xlayered-tx-pool-max-future-by-sender=16000 \
+    --rpc-ws-enabled=true \
+    --Xlayered-tx-pool=true \
+    --rpc-http-enabled=true "
 
 if eval ${CMD_DOCKER_CREATE}; then
         echo "Successfully create docker container: ${CONTAINER_NAME}"
