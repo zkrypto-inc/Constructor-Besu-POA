@@ -4,7 +4,7 @@
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NODE_NAME="Node-1"
-CONTAINER_NAME="BootNode"
+CONTAINER_NAME="BootNode-0"
 
 # default ports
 RPC_HTTP_PORT=8545
@@ -17,7 +17,6 @@ ENV_PD_PATH=${__dir}/.env.production
 source ${ENV_PATH}
 
 LOCAL=false
-
 # parse command-line arguments
 for arg in "$@"
 do
@@ -98,6 +97,7 @@ CMD_DOCKER_CREATE="docker create --name ${CONTAINER_NAME} \
 if [ "$USE_PODMAN" = true ]; then
   CMD_DOCKER_CREATE+="-u root "
 fi
+BOOT_NODE_ENODES=$(grep "BOOT_NODE_ENODE" "${ENV_PD_PATH}")
 
 CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --rpc-http-max-active-connections=1000 \
@@ -109,19 +109,16 @@ CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --rpc-ws-port=${RPC_WS_PORT} \
     --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --p2p-port=${P2P_PORT} \
-    --tx-pool-max-size=16000 \
     --host-allowlist="*" \
     --min-gas-price=0
     --rpc-ws-max-frame-size=104857600 \
-    --Xlayered-tx-pool-layer-max-capacity=500000000 \
-    --Xlayered-tx-pool-max-prioritized=16000 \
-    --Xlayered-tx-pool-max-future-by-sender=16000 \
+    --tx-pool-max-future-by-sender=20000 \
+    --tx-pool-layer-max-capacity=209715200 \
+    --tx-pool-max-prioritized=16000 \
     --rpc-ws-enabled=true \
-    --Xlayered-tx-pool=true \
+    --bootnodes=
     --rpc-http-enabled=true "
-
-
-    
+## 200MB
 if eval ${CMD_DOCKER_CREATE}; then
         echo "Successfully create docker container: ${CONTAINER_NAME}"
     else
@@ -173,12 +170,20 @@ fi
 BOOT_NODE_KEY_PUB=`cat ${KEY_PUB}`
 BOOT_NODE_ENODE=enode://${BOOT_NODE_KEY_PUB:2}@${BOOT_NODE_IP}:${P2P_PORT}
 echo "Boot Node Enode: ${BOOT_NODE_ENODE}"
-cp ${ENV_PATH} ${ENV_PD_PATH}
-
+BOOT_NODE_ENODES="\n"
+echo "${BOOT_NODE_ENODES}"
+cp .env.defaults .env.production
+echo -e "${BOOT_NODE_ENODES}" >> .env.production
 # Check if env.defaults file exists and if it contains the BOOT_NODE_ENODE variable
+
+if [[ -f ${ENV_PD_PATH} ]]; then
+  echo "file in"
+fi
+
 if [[ -f ${ENV_PD_PATH} && -n $(grep "BOOT_NODE_ENODE=" ${ENV_PD_PATH}) ]]; then
   # Update the existing BOOT_NODE_ENODE value
-  sed -i '' "s|BOOT_NODE_ENODE=.*|BOOT_NODE_ENODE=${BOOT_NODE_ENODE}|" ${ENV_PD_PATH}
+
+  sed -i "s|BOOT_NODE_ENODE=.*|BOOT_NODE_ENODE=${BOOT_NODE_ENODE}|" ${ENV_PD_PATH}
 else
   # Check if the last character is a newline character
   if [[ -s ${ENV_PD_PATH} ]] && [[ -z $(tail -c 1 ${ENV_PD_PATH}) ]]; then

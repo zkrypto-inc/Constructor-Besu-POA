@@ -104,6 +104,8 @@ def get_key_pair_list(accounts, indexer):
     count = 1
     i = 0
     for row in accounts:
+        if len(validator_number) == i:
+            return result
         if count == validator_number[i]:
             i+=1
             result.append({"privateKey": remove_prefix(row[0]), "account": remove_prefix(row[1]), "column": count})

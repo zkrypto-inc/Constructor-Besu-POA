@@ -107,16 +107,16 @@ CMD_DOCKER_CREATE+="${BESU_IMAGE} \
     --rpc-ws-port=${RPC_WS_PORT} \
     --rpc-ws-apis=ETH,NET,QBFT,ADMIN,PRIV,EEA,MINER,WEB3,TXPOOL,DEBUG,TRACE \
     --p2p-port=${P2P_PORT} \
-    --tx-pool-max-size=16000 \
     --host-allowlist="*" \
-    --bootnodes=${BOOT_NODE_ENODE} \
+    --bootnodes=${BOOT_NODE_ENODE_0},${BOOT_NODE_ENODE_1}\
     --min-gas-price=0 \
+    --rpc-http-max-request-content-length=209715200 \
+    --rpc-http-max-batch-size=-1 \
     --rpc-ws-max-frame-size=104857600 \
-    --Xlayered-tx-pool-layer-max-capacity=500000000 \
-    --Xlayered-tx-pool-max-prioritized=16000 \
-    --Xlayered-tx-pool-max-future-by-sender=16000 \
+    --tx-pool-max-future-by-sender=20000 \
+    --tx-pool-layer-max-capacity=209715200 \
+    --tx-pool-max-prioritized=20000 \
     --rpc-ws-enabled=true \
-    --Xlayered-tx-pool=true \
     --rpc-http-enabled=true "
 
 if eval ${CMD_DOCKER_CREATE}; then
